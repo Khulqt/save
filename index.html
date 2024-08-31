@@ -9,25 +9,25 @@
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600&display=swap');
 
         body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: #f0f8ff;
-            margin: 1;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+    font-family: 'Tajawal', sans-serif;
+    background-color: #ffffff;
+    margin: 0; /* إزالة الهوامش */
+    padding: 0; /* إزالة الحواشي */
+    display: block; /* إزالة خصائص flex */
+    height: 100%;
+    width: 100%;
+}
 
-        .form-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 1 0 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 500px;
-        }
-
+.form-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 1 0 10px rgba(0, 0, 0, 0.1);
+    width: 90%; /* توسعة العرض ليشمل معظم الصفحة */
+    max-width: 1000px; /* تعيين الحد الأقصى للعرض */
+    margin: 20px auto; /* إضافة تباعد حول الحاوية */
+}
+               
         h2 {
             text-align: center;
             color: #333;
@@ -36,6 +36,7 @@
 
         .form-group {
             margin-bottom: 15px;
+            position: relative;
         }
 
         label {
@@ -55,6 +56,29 @@
 
         select {
             cursor: pointer;
+        }
+
+        ul.autocomplete-items {
+            position: absolute;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        ul.autocomplete-items li {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        ul.autocomplete-items li:hover {
+            background-color: #f0f8ff;
         }
 
         button {
@@ -78,14 +102,29 @@
             background-color: red;
             margin-top: 10px;
         }
+        .logo-container {
+    text-align: center; /* لضبط الصورة في المنتصف أفقياً */
+    margin-top: 20px; /* مسافة صغيرة من الأعلى */
+    margin-bottom: 20px; /* مسافة تفصل الصورة عن باقي المحتوى */
+}
+
+.logo-container img {
+    max-width: 100%; /* تجعل الصورة مرنة بحيث لا تتجاوز عرض الصفحة */
+    height: auto; /* الحفاظ على نسبة العرض إلى الارتفاع */
+}
+        
     </style>
 </head>
 <body>
+    <div class="logo-container">
+    <img src="https://i.postimg.cc/X7MJLFFY/Picsart-24-08-31-18-50-00-696-1.jpg" alt="Logo">
+</div>
     <div class="form-container">
         <h2>تسجيل البيانات</h2>
         <div class="form-group">
             <label for="name">الاسم</label>
-            <input type="text" id="name" placeholder="ادخل الاسم">
+            <input type="text" id="name" placeholder="ادخل الاسم" oninput="autocompleteName(this)">
+            <ul id="name-autocomplete" class="autocomplete-items"></ul>
         </div>
         <div class="form-group">
             <label for="national-id">الرقم القومي</label>
@@ -120,7 +159,7 @@
     </div>
 
     <script>
-        // تحميل البيانات المخزنة في localStorage عند تحميل الصفحة
+        // تحميل البيانات المخزنة في LocalStorage عند تحميل الصفحة
         document.addEventListener('DOMContentLoaded', loadStoredData);
 
         function loadStoredData() {
@@ -146,7 +185,7 @@
             statusSelect.innerHTML = ""; // مسح الخيارات الحالية
 
             if (gender === "male") {
-                var maleOptions = ['أعزب', 'متزوج', 'حالة إنسانية', 'مسن', 'عجز', 'معاق'];
+                var maleOptions = ['أعزب', 'متزوج', 'مطلق', 'أرمل', 'مسن', 'عجز', 'معاق'];
                 maleOptions.forEach(function(option) {
                     var opt = document.createElement('option');
                     opt.value = option;
@@ -154,7 +193,7 @@
                     statusSelect.appendChild(opt);
                 });
             } else if (gender === "female") {
-                var femaleOptions = ['عزباء', 'متزوجة', 'مطلقة', 'أرملة', 'مسنة', 'عجز', 'معاقه','حالة إنسانية'];
+                var femaleOptions = ['عزباء', 'متزوجة', 'مطلقة', 'أرملة', 'مسنة', 'عجز', 'معاقه'];
                 femaleOptions.forEach(function(option) {
                     var opt = document.createElement('option');
                     opt.value = option;
@@ -214,6 +253,32 @@
                 } else {
                     alert("حدث خطأ أثناء إرسال ❌البيانات");
                 }
+            });
+        }
+
+        // وظيفة الإكمال التلقائي
+        function autocompleteName(inputElement) {
+            var storedData = JSON.parse(localStorage.getItem('data') || '[]');
+            var autocompleteList = document.getElementById('name-autocomplete');
+            autocompleteList.innerHTML = ''; // مسح القائمة السابقة
+
+            if (!inputElement.value) {
+                return; // إذا لم يكن هناك إدخال، لا تعرض أي اقتراحات
+            }
+
+            var filteredNames = storedData
+                .filter(item => item.name.toLowerCase().startsWith(inputElement.value.toLowerCase()))
+                .map(item => item.name);
+
+            // عرض الاقتراحات في قائمة الإكمال التلقائي
+            filteredNames.forEach(function (name) {
+                var listItem = document.createElement('li');
+                listItem.textContent = name;
+                listItem.onclick = function () {
+                    inputElement.value = name;
+                    autocompleteList.innerHTML = ''; // مسح القائمة بعد اختيار اسم
+                };
+                autocompleteList.appendChild(listItem);
             });
         }
     </script>
