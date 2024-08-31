@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل البيانات</title>
+    <style>
+        /* استيراد خط Tajawal من Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f0f8ff;
+            margin: 1;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 1 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="text"], select {
+            width: 90%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>تسجيل البيانات</h2>
+        <div class="form-group">
+            <label for="name">الاسم</label>
+            <input type="text" id="name" placeholder="ادخل الاسم">
+        </div>
+        <div class="form-group">
+            <label for="national-id">الرقم القومي</label>
+            <input type="text" id="national-id" placeholder="ادخل الرقم القومي">
+        </div>
+        <div class="form-group">
+            <label for="amount">المبلغ</label>
+            <input type="text" id="amount" placeholder="ادخل المبلغ">
+        </div>
+        <div class="form-group">
+            <label for="gender">النوع</label>
+            <select id="gender" onchange="updateStatusOptions()">
+                <option value="">اختر النوع</option>
+                <option value="male">ذكر</option>
+                <option value="female">أنثى</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="status">الحالة الاجتماعية</label>
+            <select id="status">
+                <!-- سيتم تحديث الخيارات بناءً على اختيار النوع -->
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="members">عدد الأفراد</label>
+            <input type="text" id="members" placeholder="ادخل عدد الأفراد">
+        </div>
+        <button onclick="sendData()">إرسال البيانات</button>
+    </div>
+
+    <script>
+        // تحميل البيانات المخزنة في localStorage عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', loadStoredData);
+
+        function loadStoredData() {
+            // جلب البيانات المخزنة
+            var storedData = JSON.parse(localStorage.getItem('data') || '[]');
+
+            // ملء البيانات إذا كانت موجودة
+            if (storedData.length > 0) {
+                var nationalIdInput = document.getElementById("national-id");
+                var storedNationalIds = storedData.map(item => item.nationalId);
+
+                // تحقق من الرقم القومي المدخل
+                var currentNationalId = nationalIdInput.value.trim();
+                if (storedNationalIds.includes(currentNationalId)) {
+                    alert("الرقم القومي مسجل من قبل.");
+                }
+            }
+        }
+
+        function updateStatusOptions() {
+            var gender = document.getElementById("gender").value;
+            var statusSelect = document.getElementById("status");
+            statusSelect.innerHTML = ""; // مسح الخيارات الحالية
+
+            if (gender === "male") {
+                var maleOptions = ['أعزب', 'متزوج', 'مطلق', 'أرمل', 'مسن', 'عجز', 'معاق'];
+                maleOptions.forEach(function(option) {
+                    var opt = document.createElement('option');
+                    opt.value = option;
+                    opt.innerHTML = option;
+                    statusSelect.appendChild(opt);
+                });
+            } else if (gender === "female") {
+                var femaleOptions = ['عزباء', 'متزوجة', 'مطلقة', 'أرملة', 'مسنة', 'عجز', 'معاقه'];
+                femaleOptions.forEach(function(option) {
+                    var opt = document.createElement('option');
+                    opt.value = option;
+                    opt.innerHTML = option;
+                    statusSelect.appendChild(opt);
+                });
+            }
+        }
+
+        function sendData() {
+            var name = document.getElementById("name").value.trim();
+            var nationalId = document.getElementById("national-id").value.trim();
+            var amount = document.getElementById("amount").value.trim();
+            var status = document.getElementById("status").value;
+            var members = document.getElementById("members").value.trim();
+
+            if (!name || !nationalId || !amount || !status || !members) {
+                alert("يرجى ملء جميع الحقول المطلوبة.");
+                return;
+            }
+
+            // تحقق من أن الرقم القومي غير مسجل مسبقًا
+            var storedData = JSON.parse(localStorage.getItem('data') || '[]');
+            var isDuplicate = storedData.some(item => item.nationalId === nationalId);
+
+            if (isDuplicate) {
+                alert("الرقم القومي مسجل من قبل.");
+                return;
+            }
+
+            // حفظ البيانات في localStorage
+            storedData.push({
+                name: name,
+                nationalId: nationalId,
+                amount: amount,
+                status: status,
+                members: members
+            });
+            localStorage.setItem('data', JSON.stringify(storedData));
+
+            var message = `
+                الاسم: ${name}\n
+                الرقم القومي: ${nationalId}\n
+                المبلغ: ${amount}\n
+                الحالة الاجتماعية: ${status}\n
+                عدد الأفراد: ${members}
+            `;
+
+            // استبدل TOKEN و CHANNEL_ID بالتوكن ومعرف القناة الخاصة بك
+            var token = "6457415810:AAEIWy76tjfslXmStkEcth_K_Hy4_Fyp7JM";
+            var channel_id = "@gifdxf";  // يجب أن يبدأ بـ @ متبوعًا بمعرف القناة
+            var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${channel_id}&text=${encodeURIComponent(message)}`;
+
+            fetch(url).then(response => {
+                if (response.ok) {
+                    alert("تم حفظ البيانات بنجاح✅");
+                } else {
+                    alert("حدث خطأ أثناء إرسال ❌البيانات");
+                }
+            });
+        }
+    </script>
+</body>
+</html>
