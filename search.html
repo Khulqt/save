@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>البحث عن بيانات</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <style>
+        /* استيراد خط Tajawal من Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 90%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e9f7ff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .result-container h3 {
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+
+        .result-container p {
+            font-size: 16px;
+            margin: 5px 0;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>البحث عن بيانات</h2>
+        <div class="form-group">
+            <label for="national-id">الرقم القومي</label>
+            <input type="text" id="national-id" placeholder="ادخل الرقم القومي">
+        </div>
+        <button onclick="searchData()">البحث</button>
+        <div class="error-message" id="error-message"></div>
+    </div>
+
+    <div class="result-container" id="result-container">
+        <h3>البيانات</h3>
+        <p><strong>الاسم:</strong> <span id="name"></span></p>
+        <p><strong>الرقم القومي:</strong> <span id="national-id-result"></span></p>
+        <p><strong>المبلغ:</strong> <span id="amount"></span></p>
+        <p><strong>الحالة الاجتماعية:</strong> <span id="status"></span></p>
+        <p><strong>عدد الأفراد:</strong> <span id="members"></span></p>
+    </div>
+
+    <script>
+        function searchData() {
+            var nationalId = document.getElementById("national-id").value.trim();
+            var errorMessage = document.getElementById("error-message");
+            var resultContainer = document.getElementById("result-container");
+
+            if (!nationalId) {
+                errorMessage.textContent = "يرجى إدخال الرقم القومي.";
+                resultContainer.style.display = 'none';
+                return;
+            }
+
+            // قراءة ملف Excel وتحليل البيانات
+            fetch('channel_data.xlsx')
+                .then(response => response.arrayBuffer())
+                .then(data => {
+                    var workbook = XLSX.read(data, {type: 'array'});
+                    var sheetName = workbook.SheetNames[0];
+                    var worksheet = workbook.Sheets[sheetName];
+                    var jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+
+                    var found = false;
+
+                    for (var i = 1; i < jsonData.length; i++) {  // ابدأ من الصف الثاني لتجنب العناوين
+                        if (jsonData[i][1] == nationalId) {  // فرضية أن الرقم القومي في العمود الثاني (ب)
+                            document.getElementById("name").textContent = jsonData[i][0];
+                            document.getElementById("national-id-result").textContent = jsonData[i][1];
+                            document.getElementById("amount").textContent = jsonData[i][2];
+                            document.getElementById("status").textContent = jsonData[i][3];
+                            document.getElementById("members").textContent = jsonData[i][4];
+                            resultContainer.style.display = 'block';
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        errorMessage.textContent = "الرقم القومي غير مسجل.";
+                        resultContainer.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    errorMessage.textContent = "حدث خطأ أثناء تحميل البيانات.";
+                    resultContainer.style.display = 'none';
+                });
+        }
+    </script>
+</body>
+</html>
