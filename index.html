@@ -146,7 +146,7 @@
             statusSelect.innerHTML = ""; // مسح الخيارات الحالية
 
             if (gender === "male") {
-                var maleOptions = ['أعزب', 'متزوج', 'مطلق', 'أرمل', 'مسن', 'عجز', 'معاق'];
+                var maleOptions = ['أعزب', 'متزوج', 'حالة إنسانية', 'مسن', 'عجز', 'معاق'];
                 maleOptions.forEach(function(option) {
                     var opt = document.createElement('option');
                     opt.value = option;
@@ -154,7 +154,7 @@
                     statusSelect.appendChild(opt);
                 });
             } else if (gender === "female") {
-                var femaleOptions = ['عزباء', 'متزوجة', 'مطلقة', 'أرملة', 'مسنة', 'عجز', 'معاقه'];
+                var femaleOptions = ['عزباء', 'متزوجة', 'مطلقة', 'أرملة', 'مسنة', 'عجز', 'معاقه','حالة إنسانية'];
                 femaleOptions.forEach(function(option) {
                     var opt = document.createElement('option');
                     opt.value = option;
