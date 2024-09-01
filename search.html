@@ -6,7 +6,6 @@
     <title>البحث عن بيانات</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
-        /* استيراد خط Tajawal من Google Fonts */
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600&display=swap');
 
         body {
@@ -114,10 +113,13 @@
     <div class="result-container" id="result-container">
         <h3>البيانات</h3>
         <p><strong>الاسم:</strong> <span id="name"></span></p>
+        <p><strong>رقم الهاتف:</strong> <span id="phone"></span></p>
         <p><strong>الرقم القومي:</strong> <span id="national-id-result"></span></p>
-        <p><strong>المبلغ:</strong> <span id="amount"></span></p>
-        <p><strong>الحالة:</strong> <span id="status"></span></p>
-        <p><strong>عدد أفراد:</strong> <span id="members"></span></p>
+        <p><strong>الحالة الاجتماعية:</strong> <span id="status"></span></p>
+        <p><strong>عدد أفراد الأسرة:</strong> <span id="members"></span></p>
+        <p><strong>القرية:</strong> <span id="village"></span></p>
+        <p><strong>الوحدة المحلية:</strong> <span id="local-unit"></span></p>
+        <p><strong>المركز:</strong> <span id="center"></span></p>
     </div>
 
     <script>
@@ -132,8 +134,7 @@
                 return;
             }
 
-            // قراءة ملف Excel وتحليل البيانات
-            fetch('channel_data (1).xlsx')
+            fetch('data.xlsx') // اسم ملف Excel
                 .then(response => response.arrayBuffer())
                 .then(data => {
                     var workbook = XLSX.read(data, {type: 'array'});
@@ -144,12 +145,15 @@
                     var found = false;
 
                     for (var i = 1; i < jsonData.length; i++) {  // ابدأ من الصف الثاني لتجنب العناوين
-                        if (jsonData[i][1] == nationalId) {  // فرضية أن الرقم القومي في العمود الثاني (ب)
+                        if (jsonData[i][2] == nationalId) {  // فرضية أن الرقم القومي في العمود الثالث (C)
                             document.getElementById("name").textContent = jsonData[i][0];
-                            document.getElementById("national-id-result").textContent = jsonData[i][1];
-                            document.getElementById("amount").textContent = jsonData[i][2];
+                            document.getElementById("phone").textContent = jsonData[i][1];
+                            document.getElementById("national-id-result").textContent = jsonData[i][2];
                             document.getElementById("status").textContent = jsonData[i][3];
                             document.getElementById("members").textContent = jsonData[i][4];
+                            document.getElementById("village").textContent = jsonData[i][5];
+                            document.getElementById("local-unit").textContent = jsonData[i][6];
+                            document.getElementById("center").textContent = jsonData[i][7];
                             resultContainer.style.display = 'block';
                             found = true;
                             break;
