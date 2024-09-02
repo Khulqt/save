@@ -147,7 +147,7 @@
         };
 
         function loadExcelFile() {
-            fetch('channel_data.xlsx')
+            fetch('data.xlsx')
                 .then(response => response.arrayBuffer())
                 .then(data => {
                     var workbook = XLSX.read(data, {type: 'array'});
