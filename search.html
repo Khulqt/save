@@ -142,8 +142,16 @@
 
         // تحميل البيانات عند فتح الصفحة
         window.onload = function() {
-            loadExcelFile();
-            simulateLoadingBar();
+            if (localStorage.getItem("visited")) {
+                // إذا قام المستخدم بزيارة الصفحة سابقاً، يتم إخفاء شاشة التحميل وعرض واجهة البحث مباشرة
+                document.getElementById("loading-container").style.display = 'none';
+                document.getElementById("form-container").style.display = 'block';
+            } else {
+                // إذا كانت أول زيارة، تظهر شاشة التحميل ويتم تحميل البيانات
+                loadExcelFile();
+                simulateLoadingBar();
+                localStorage.setItem("visited", true); // تخزين المعلومة أن المستخدم زار الصفحة
+            }
         };
 
         function loadExcelFile() {
@@ -174,7 +182,7 @@
                     width++;
                     progressElement.style.width = width + '%';
                 }
-            }, 1200); // كل 1.2 ثانية، يزيد العرض بنسبة 1%
+            }, 200); // كل 1.2 ثانية، يزيد العرض بنسبة 1%
         }
 
         function searchData() {
